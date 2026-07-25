@@ -22,7 +22,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.shashi.sms.listener.SmsMessageListener;
@@ -112,6 +114,8 @@ public class BatchConfig {
                 .reader(smsMessageFlatFileItemReader)
                 .processor(smsMessageProcessor())
                 .writer(smsMessageWriter())
+                .taskExecutor(taskExecutor())
+                .throttleLimit(4)
                 .build();
     }
 
@@ -122,6 +126,11 @@ public class BatchConfig {
                 .incrementer(new RunIdIncrementer())
                 .start(smsMessageStep)
                 .build();
+    }
+
+    @Bean
+    public TaskExecutor taskExecutor() {
+        return new SimpleAsyncTaskExecutor("batch-thread-");
     }
 
 }
